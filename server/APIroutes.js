@@ -88,7 +88,7 @@ WebApp.connectHandlers.use('/timeentry/create/', async (req, res, next) => {
       sendResponse(res, 500, `Invalid parameters received.${error}`)
       return
     }
-    const timecardId = insertTimeCard(json.projectId, json.task, new Date(json.date), json.hours, meteorUser._id)
+    const timecardId = insertTimeCard(json.projectId, json.task, new Date(json.date), json.hours, meteorUser._id, json.taskimage)
     const payload = {}
     payload.timecardId = timecardId
     sendResponse(res, 200, 'Time entry created.', payload)

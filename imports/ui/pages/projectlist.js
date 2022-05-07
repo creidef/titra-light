@@ -7,7 +7,7 @@ import '../components/projectchart.js'
 import '../components/allprojectschart.js'
 import '../components/projectProgress.js'
 import hex2rgba from '../../utils/hex2rgba.js'
-import { showToast } from '../../utils/frontend_helpers.js'
+import { getGlobalSetting, showToast } from '../../utils/frontend_helpers.js'
 
 Template.projectlist.onCreated(function createProjectList() {
   this.subscribe('myprojects', {})

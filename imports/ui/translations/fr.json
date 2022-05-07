@@ -29,7 +29,8 @@
     "or": "ou",
     "time_entry": "Entrée de temps",
     "class": "Classe",
-    "type": "Type"
+    "type": "Type",
+    "image": "image"
   },
   "navigation": {
     "track": "Suivi",

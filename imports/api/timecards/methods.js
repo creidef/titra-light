@@ -19,7 +19,7 @@ import {
 } from '../../utils/server_method_helpers.js'
 
 function checkTimeEntryRule({
-  userId, projectId, task, state, date, hours,
+  userId, projectId, task, state, date, hours, taskimage
 }) {
   const vm = new NodeVM({
     wrapper: 'none',
@@ -34,6 +34,7 @@ function checkTimeEntryRule({
         state,
         date,
         hours,
+        taskimage,
       },
     },
   })
@@ -45,13 +46,14 @@ function checkTimeEntryRule({
     throw new Meteor.Error(error.message)
   }
 }
-function insertTimeCard(projectId, task, date, hours, userId, customfields) {
+function insertTimeCard(projectId, task, date, hours, userId, taskimage, customfields) {
   const newTimeCard = {
     userId,
     projectId,
     date,
     hours,
     task: task.replace(/(:\S*:)/g, emojify),
+    taskimage,
     ...customfields,
   }
   if (!Tasks.findOne({ userId, name: task.replace(/(:\S*:)/g, emojify) })) {
@@ -63,7 +65,7 @@ function insertTimeCard(projectId, task, date, hours, userId, customfields) {
   }
   return Timecards.insert(newTimeCard)
 }
-function upsertTimecard(projectId, task, date, hours, userId) {
+function upsertTimecard(projectId, task, date, hours, userId, taskimage) {
   if (!Tasks.findOne({ userId, name: task.replace(/(:\S*:)/g, emojify) })) {
     Tasks.insert({ userId, lastUsed: new Date(), name: task.replace(/(:\S*:)/g, emojify) })
   } else {
@@ -75,6 +77,7 @@ function upsertTimecard(projectId, task, date, hours, userId) {
       projectId,
       date,
       task: task.replace(/(:\S*:)/g, emojify),
+      taskimage,
     })
   } else if (Timecards.find({
     userId,
@@ -97,6 +100,7 @@ function upsertTimecard(projectId, task, date, hours, userId) {
       projectId,
       date,
       task: task.replace(/(:\S*:)/g, emojify),
+      taskimage,
     },
     {
       userId,
@@ -104,6 +108,7 @@ function upsertTimecard(projectId, task, date, hours, userId) {
       date,
       hours,
       task: task.replace(/(:\S*:)/g, emojify),
+      taskimage,
     },
 
     { upsert: true },
@@ -116,6 +121,7 @@ Meteor.methods({
     task,
     date,
     hours,
+    taskimage,
     customfields,
   }) {
     check(projectId, String)
@@ -125,9 +131,9 @@ Meteor.methods({
     check(customfields, Match.Maybe(Object))
     checkAuthentication(this)
     checkTimeEntryRule({
-      userId: this.userId, projectId, task, state: 'new', date, hours,
+      userId: this.userId, projectId, task, state: 'new', date, hours, taskimage,
     })
-    insertTimeCard(projectId, task, date, hours, this.userId, customfields)
+    insertTimeCard(projectId, task, date, hours, this.userId, taskimage, customfields)
   },
   upsertWeek(weekArray) {
     checkAuthentication(this)
@@ -144,8 +150,9 @@ Meteor.methods({
         state: 'new',
         date: element.date,
         hours: element.hours,
+        taskimage: element.taskimage,
       })
-      upsertTimecard(element.projectId, element.task, element.date, element.hours, this.userId)
+      upsertTimecard(element.projectId, element.task, element.date, element.hours, this.userId, element.taskimage)
     })
   },
   updateTimeCard({
@@ -154,6 +161,7 @@ Meteor.methods({
     task,
     date,
     hours,
+    taskimage,
     customfields,
   }) {
     check(projectId, String)
@@ -176,6 +184,7 @@ Meteor.methods({
         date,
         hours,
         task: task.replace(/(:\S*:)/g, emojify),
+        taskimage,
         ...customfields,
       },
     })
@@ -190,6 +199,7 @@ Meteor.methods({
       state: timecard.state,
       date: timecard.date,
       hours: timecard.hours,
+      taskimage: "",
     })
     return Timecards.remove({ userId: this.userId, _id: timecardId })
   },

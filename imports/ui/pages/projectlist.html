@@ -1,124 +1,126 @@
 <template name="projectlist">
-  {{#if Template.subscriptionsReady}}
-    {{#if moreThanOneProject}}
-      <div class="card mb-3 all-projects-bg">
-        <div class="card-header">
-          <div class="row">
-            <div class="col me-auto">
-              {{t "overview.all_projects"}}
-            </div>
-            <div class="col-2 text-end">
-              <span class="badge bg-dark float-end js-tooltip" data-bs-toggle="tooltip" data-bs-placement="left" title="{{t 'overview.number_projects'}}" id="projectCount">{{projectCount}}</span>
+  {{#if currentUser.isAdmin}}
+      {{#if Template.subscriptionsReady}}
+      {{#if moreThanOneProject}}
+        <div class="card mb-3 all-projects-bg">
+          <div class="card-header">
+            <div class="row">
+              <div class="col me-auto">
+                {{t "overview.all_projects"}}
+              </div>
+              <div class="col-2 text-end">
+                <span class="badge bg-dark float-end js-tooltip" data-bs-toggle="tooltip" data-bs-placement="left" title="{{t 'overview.number_projects'}}" id="projectCount">{{projectCount}}</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="card-body">
-            {{> allprojectschart showArchived=showArchived}}
-            <hr/>
-            <div class="row mt-2" id="{{project._id}}">
-              <div class="col-3 d-grid">
-                <a href="/list/timecards/all" class="btn btn-secondary border" title='{{t "navigation.details"}}'><i class="fa fa-list"></i> <span class="d-none d-md-inline">{{t "navigation.details"}}</span></a>
-              </div>
-              <div class="col g-drig"></div>
-              {{#if moreThanOneProject}}
+          <div class="card-body">
+              {{> allprojectschart showArchived=showArchived}}
+              <hr/>
+              <div class="row mt-2" id="{{project._id}}">
                 <div class="col-3 d-grid">
-                  <a href="/create/project" class="btn btn-primary" id="next" title='{{t "navigation.new_project"}}'><i class="fa fa-plus"></i> <span class="d-none d-md-inline">{{t "globals.project"}}</span></a>
+                  <a href="/list/timecards/all" class="btn btn-secondary border" title='{{t "navigation.details"}}'><i class="fa fa-list"></i> <span class="d-none d-md-inline">{{t "navigation.details"}}</span></a>
+                </div>
+                <div class="col g-drig"></div>
+                {{#if moreThanOneProject}}
+                  <div class="col-3 d-grid">
+                    <a href="/create/project" class="btn btn-primary" id="next" title='{{t "navigation.new_project"}}'><i class="fa fa-plus"></i> <span class="d-none d-md-inline">{{t "globals.project"}}</span></a>
+                  </div>
+                {{/if}}
+              </div>
+          </div>
+        </div>
+      {{/if}}
+      {{#if getGlobalSetting "customPlaceholderContent" }}
+        <div class="card mb-3" style="border: 1px solid #455A64; overflow:hidden;">
+          <div class="card-body">
+              <div class="js-placeholder">{{{ getGlobalSetting "customPlaceholderContent" }}}</div>
+          </div>
+        </div>
+      {{/if}}
+        <div class="js-project-list">
+          {{#each project in projects}}
+            <div class="card mb-3" style="border: 1px solid {{colorOpacity project.color 50}}">
+              <div class="card-header">{{project.name}} <span class="float-end handle"><i class="fa fa-arrows-alt"></i></span></div>
+              <div class="card-body">
+                {{> projectchart projectId=project._id}}
+                  <div class="row mt-2" id="{{project._id}}">
+                    {{#if archived (project._id)}}
+                      <div class="col-3 d-grid">
+                        <button type="button" class="btn btn-secondary border js-restore-project"><i class="fa fa-undo"></i> <span class="d-none d-md-inline">{{t "navigation.restore"}}</span></button>
+                      </div>
+                    {{else}}
+                      <div class="col-3 d-grid">
+                        <a href="/tracktime/{{project._id}}" class="btn btn-secondary border"><i class="fa fa-plus"></i> <span class="d-none d-md-inline">{{t "navigation.track"}}</span></a>
+                      </div>
+                    {{/if}}
+                    <div class="col-3 d-grid">
+                      <a href="/list/timecards/{{project._id}}" class="btn btn-secondary border"><i class="fa fa-list"></i> <span class="d-none d-md-inline">{{t "navigation.details"}}</span></a>
+                    </div>
+                    {{#if isProjectOwner (project._id)}}
+                      <div class="col-3 d-grid">
+                        <button type="button" class="btn btn-secondary border js-edit-project"><i class="fa fa-edit"></i> <span class="d-none d-md-inline">{{t "navigation.edit"}}</span></button>
+                      </div>
+                      {{#if archived (project._id)}}
+                      <div class="col-3 d-grid">
+                        <button type="button" class="btn btn-secondary border js-delete-project"><i class="fa fa-trash"></i> <span class="d-none d-md-inline">{{t "navigation.delete"}}</span></button>
+                      </div>
+                      {{else}}
+                      <div class="col-3 d-grid">
+                        <button type="button" class="btn btn-secondary border js-archive-project"><i class="fa fa-archive"></i> <span class="d-none d-md-inline">{{t "navigation.archive"}}</span></button>
+                      </div>
+                      {{/if}}
+                    {{/if}}
+                  </div>
+              </div>
+              {{#if project.target}}
+                {{#with project}}
+                  {{>projectProgress}}
+                {{/with}}
+              {{/if}}
+            </div>
+          {{/each}}
+        </div>
+        {{#unless moreThanOneProject}}
+          <div class="row">
+            <div class="col-md-10 col-6">
+              <a href="/create/project" class="btn btn-primary" id="next">{{t "navigation.new_project"}}</a>
+            </div>
+            <div class="col-md-2 col-6">
+              {{#if hasArchivedProjects}}
+                <div class="form-check form-switch pull-right">
+                  <input id="showArchived" type="checkbox" class="form-check-input"/>
+                  <label class="form-label" for="showArchived"> <span class="d-none d-sm-inline">{{t "navigation.show_archived"}} </span><i class="fa fa-archive d-inline d-sm-none"></i></label>
                 </div>
               {{/if}}
             </div>
-        </div>
-      </div>
-    {{/if}}
-    {{#if getGlobalSetting "customPlaceholderContent" }}
-      <div class="card mb-3" style="border: 1px solid #455A64; overflow:hidden;">
+          </div>
+        {{/unless}}
+    {{else}}
+      <div class="card mb-3 all-projects-bg" style="min-height:332px">
+        <div class="card-header">{{t "tabular.sLoadingRecords"}}</div>
         <div class="card-body">
-            <div class="js-placeholder">{{{ getGlobalSetting "customPlaceholderContent" }}}</div>
+          <div class="row">
+            <div class="col-12 col-md-4">
+              ... <br/>
+              ... <br/>
+            </div>
+            <div class="d-none d-md-block col-md-3 text-center">
+                <p>...</p>
+                <div style="margin:auto; width:122px; height:122px; border-radius:50%; background-color: rgba(0,0,0,0.1);"></div>
+            </div>
+            <div class="d-none d-md-block col-md-5 text-center">
+              <p>...</p>
+              <div style="margin:auto; width:428px; height:132px; background-color:rgba(0,0,0,0.1);"></div>
+            </div>
+          </div>
+            <hr/>
+            <div class="row mt-2">
+              <div class="col-3 col-offset-9">
+                <button type="button" class="btn btn-secondary border disabled"><i class="fa fa-list"></i></button>
+              </div>
+            </div>
         </div>
       </div>
     {{/if}}
-      <div class="js-project-list">
-        {{#each project in projects}}
-           <div class="card mb-3" style="border: 1px solid {{colorOpacity project.color 50}}">
-            <div class="card-header">{{project.name}} <span class="float-end handle"><i class="fa fa-arrows-alt"></i></span></div>
-            <div class="card-body">
-              {{> projectchart projectId=project._id}}
-                <div class="row mt-2" id="{{project._id}}">
-                  {{#if archived (project._id)}}
-                    <div class="col-3 d-grid">
-                      <button type="button" class="btn btn-secondary border js-restore-project"><i class="fa fa-undo"></i> <span class="d-none d-md-inline">{{t "navigation.restore"}}</span></button>
-                    </div>
-                  {{else}}
-                    <div class="col-3 d-grid">
-                      <a href="/tracktime/{{project._id}}" class="btn btn-secondary border"><i class="fa fa-plus"></i> <span class="d-none d-md-inline">{{t "navigation.track"}}</span></a>
-                    </div>
-                  {{/if}}
-                  <div class="col-3 d-grid">
-                    <a href="/list/timecards/{{project._id}}" class="btn btn-secondary border"><i class="fa fa-list"></i> <span class="d-none d-md-inline">{{t "navigation.details"}}</span></a>
-                  </div>
-                  {{#if isProjectOwner (project._id)}}
-                    <div class="col-3 d-grid">
-                      <button type="button" class="btn btn-secondary border js-edit-project"><i class="fa fa-edit"></i> <span class="d-none d-md-inline">{{t "navigation.edit"}}</span></button>
-                    </div>
-                    {{#if archived (project._id)}}
-                    <div class="col-3 d-grid">
-                      <button type="button" class="btn btn-secondary border js-delete-project"><i class="fa fa-trash"></i> <span class="d-none d-md-inline">{{t "navigation.delete"}}</span></button>
-                    </div>
-                    {{else}}
-                    <div class="col-3 d-grid">
-                      <button type="button" class="btn btn-secondary border js-archive-project"><i class="fa fa-archive"></i> <span class="d-none d-md-inline">{{t "navigation.archive"}}</span></button>
-                    </div>
-                    {{/if}}
-                  {{/if}}
-                </div>
-            </div>
-            {{#if project.target}}
-              {{#with project}}
-                {{>projectProgress}}
-              {{/with}}
-            {{/if}}
-          </div>
-        {{/each}}
-      </div>
-      {{#unless moreThanOneProject}}
-        <div class="row">
-          <div class="col-md-10 col-6">
-            <a href="/create/project" class="btn btn-primary" id="next">{{t "navigation.new_project"}}</a>
-          </div>
-          <div class="col-md-2 col-6">
-            {{#if hasArchivedProjects}}
-              <div class="form-check form-switch pull-right">
-                <input id="showArchived" type="checkbox" class="form-check-input"/>
-                <label class="form-label" for="showArchived"> <span class="d-none d-sm-inline">{{t "navigation.show_archived"}} </span><i class="fa fa-archive d-inline d-sm-none"></i></label>
-              </div>
-            {{/if}}
-          </div>
-        </div>
-      {{/unless}}
-  {{else}}
-    <div class="card mb-3 all-projects-bg" style="min-height:332px">
-      <div class="card-header">{{t "tabular.sLoadingRecords"}}</div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col-12 col-md-4">
-            ... <br/>
-            ... <br/>
-          </div>
-          <div class="d-none d-md-block col-md-3 text-center">
-              <p>...</p>
-              <div style="margin:auto; width:122px; height:122px; border-radius:50%; background-color: rgba(0,0,0,0.1);"></div>
-          </div>
-          <div class="d-none d-md-block col-md-5 text-center">
-            <p>...</p>
-            <div style="margin:auto; width:428px; height:132px; background-color:rgba(0,0,0,0.1);"></div>
-          </div>
-        </div>
-          <hr/>
-          <div class="row mt-2">
-            <div class="col-3 col-offset-9">
-              <button type="button" class="btn btn-secondary border disabled"><i class="fa fa-list"></i></button>
-            </div>
-          </div>
-      </div>
-    </div>
   {{/if}}
 </template>

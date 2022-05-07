@@ -9,9 +9,11 @@
         <div class="collapse navbar-collapse" id="navbar">
           <ul class="navbar-nav me-auto">
             <li class="nav-item"><a class="nav-link {{isRouteActive 'tracktime'}}" href="/tracktime"><i class="fa fa-plus"></i> {{#if displayLinkText 'tracktime'}}<span>{{t "navigation.track"}}</span>{{else}}<span class="d-none d-md-inline">{{t "navigation.track"}}</span>{{/if}}</a></li>
-            <li class="nav-item"><a class="nav-link {{isRouteActive 'projectlist'}}" href="/list/projects"><i class="fa fa-chart-pie"></i> {{#if displayLinkText 'projectlist'}}<span>{{t "navigation.overview"}}</span>{{else}}<span class="d-none d-md-inline">{{t "navigation.overview"}}</span>{{/if}}</a></li>
-            <li class="nav-item"><a class="nav-link {{isRouteActive 'timecards'}}" href="/list/timecards/all"><i class="fa fa-list"></i> {{#if displayLinkText 'timecards'}}<span>{{t "navigation.details"}}</span>{{else}}<span class="d-none d-md-inline">{{t "navigation.details"}}</span>{{/if}}</a></li>
-          </ul>
+            {{#if currentUser.isAdmin}}
+              <li class="nav-item"><a class="nav-link {{isRouteActive 'projectlist'}}" href="/list/projects"><i class="fa fa-chart-pie"></i> {{#if displayLinkText 'projectlist'}}<span>{{t "navigation.overview"}}</span>{{else}}<span class="d-none d-md-inline">{{t "navigation.overview"}}</span>{{/if}}</a></li>
+              <li class="nav-item"><a class="nav-link {{isRouteActive 'timecards'}}" href="/list/timecards/all"><i class="fa fa-list"></i> {{#if displayLinkText 'timecards'}}<span>{{t "navigation.details"}}</span>{{else}}<span class="d-none d-md-inline">{{t "navigation.details"}}</span>{{/if}}</a></li>
+            {{/if}}
+            </ul>
           <div class="nav-item me-2 d-none d-md-inline-block" style="width:130px;">
             {{#unless isRouteActive 'tracktime'}}
               {{#if getUserSetting 'timer'}}
@@ -26,7 +28,9 @@
               </a>
               <div class="dropdown-menu mt-0 bg-dark" aria-labelledby="navbarDropdownMenuLink" style="left:auto;right:-1rem;">
                 <a class="dropdown-item text-white" href="/profile"><i class="fa fa-user-circle"></i> {{t "navigation.profile"}}</a>
-                <a class="dropdown-item text-white" href="/settings"><i class="fa fa-cogs"></i> {{t "navigation.settings"}}</a>
+                {{#if currentUser.isAdmin}}
+                  <a class="dropdown-item text-white" href="/settings"><i class="fa fa-cogs"></i> {{t "navigation.settings"}}</a>
+                {{/if}}
                 {{#unless currentUser.loggingIn}}
                   {{#if Template.subscriptionsReady}}
                     {{#if currentUser.isAdmin}}
@@ -34,8 +38,10 @@
                     {{/if}}
                   {{/if}}
                 {{/unless}}
-                <div class="dropdown-divider"></div>
-                <a class="dropdown-item text-white" href="/about"><i class="fa fa-info-circle"></i> {{t "navigation.about"}}</a>
+                {{#if currentUser.isAdmin}}
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item text-white" href="/about"><i class="fa fa-info-circle"></i> {{t "navigation.about"}}</a>
+                {{/if}}
               </div>
             </li>
           </ul>

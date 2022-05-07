@@ -55,7 +55,14 @@
         </td>
         {{#each weekday in weekDays}}
           <td>
-            <input type="number" value="{{getHoursForDay weekday task}}" data-task="{{task._id}}" data-project-id="{{projectId}}" data-week-day="{{@index}}" class="form-control js-hours" placeholder="0.00"/>
+            <div value="{{getHoursForDay weekday task}}" data-week-day-img-one="{{getTaskImage1 weekday task}}" data-task="{{task._id}}" data-project-id="{{projectId}}" data-week-day="{{@index}}" class="form-control-week-with-images js-hours-and-images" style="float:left;">
+              <div style="float:both;">                
+                <input type="number" value="{{getHoursForDay weekday task}}" data-task="{{task._id}}" data-project-id="{{projectId}}" data-week-day="{{@index}}" class="form-control js-hours" placeholder="0.00"/>
+              </div>
+              <div style="float:both;">
+                <img  src="{{getTaskImage1 weekday task}}" data-task="{{task._id}}" data-project-id="{{projectId}}" data-week-day-img-one="{{getTaskImage1 weekday task}}" class="form-control js-taskImage1"/>           
+              </div>
+            </div>            
           </td>
         {{/each}}
         <td class="pt-2">{{getTotalForTask(task)}}</td>

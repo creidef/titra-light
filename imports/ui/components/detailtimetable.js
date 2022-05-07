@@ -37,6 +37,7 @@ function detailedDataTableMapper(entry) {
   const mapping = [project ? project.name : '',
     dayjs.utc(entry.date).format(getGlobalSetting('dateformat')),
     entry.task,
+    entry.taskimage,
     projectUsers.findOne() ? projectUsers.findOne().users.find((elem) => elem._id === entry.userId)?.profile?.name : '']
   if (getGlobalSetting('showCustomFieldsInDetails')) {
     if (CustomFields.find({ classname: 'time_entry' }).count() > 0) {
@@ -457,6 +458,27 @@ Template.detailtimetable.events({
   },
   'change .js-project-filter>.js-target-project': (event, templateInstance) => {
     templateInstance.data.project.set(templateInstance.$('.js-target-project').val())
+  },
+  'click .js-export-html': (event, templateInstance) => {
+    event.preventDefault()    
+    function downloadInnerHtml(filename, elId, mimeType) {
+      var elHtml = document.getElementById(elId).innerHTML
+      var link = document.createElement('a')
+      mimeType = mimeType || 'text/plain'
+  
+      link.setAttribute('download', filename)
+      link.setAttribute('href', 'data:' + mimeType + ';charset=utf-8,' + elHtml)
+      link.click(); 
+    }
+  
+    var fileName =  'rapport.html';
+    downloadInnerHtml(fileName, 'datatable-container','text/html');
+    
+    Meteor.call('setTimeEntriesState', { timeEntries: Timecards.find(templateInstance.selector[0], templateInstance.selector[1]).fetch().map((entry) => entry._id), state: 'exported' }, (error) => {
+      if (error) {
+        console.error(error)
+      }
+    })
   },
 })
 Template.detailtimetable.onDestroyed(() => {

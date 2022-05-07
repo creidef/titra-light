@@ -65,6 +65,8 @@ Template.tracktime.onCreated(function tracktimeCreated() {
   this.totalTime = new ReactiveVar(0)
   this.edittcid = new ReactiveVar()
   this.time_entry = new ReactiveVar()
+  this.dataUrl=new ReactiveVar()
+  this.taskimagePreview = new ReactiveVar()
   this.subscribe('customfieldsForClass', { classname: 'time_entry' })
   let handle
   this.autorun(() => {
@@ -183,9 +185,10 @@ Template.tracktime.events({
     }
     templateInstance.$('.js-save').text(t('navigation.saving'))
     templateInstance.$('.js-save').prop('disabled', true)
+    let taskimage = templateInstance.taskimage
     if (templateInstance.tcid.get()) {
       Meteor.call('updateTimeCard', {
-        _id: templateInstance.tcid.get(), projectId, date, hours, task, customfields,
+        _id: templateInstance.tcid.get(), projectId, date, hours, task, taskimage, customfields,
       }, (error) => {
         if (error) {
           console.error(error)
@@ -211,7 +214,7 @@ Template.tracktime.events({
       })
     } else {
       Meteor.call('insertTimeCard', {
-        projectId, date, hours, task, customfields,
+        projectId, date, hours, task, taskimage, customfields,
       }, (error) => {
         if (error) {
           console.error(error)
@@ -342,6 +345,21 @@ Template.tracktime.events({
       templateInstance.edittcid.set(undefined)
     })
   },
+  "change input[type='file']": (event,templateInstance) => {
+    var files=event.target.files;
+    if(files.length===0){
+      return;
+    }
+    var file=files[0];  
+    var fileReader=new FileReader();   
+    fileReader.onload=function(event){
+      var dataUrl=event.target.result;
+      console.log(dataUrl);
+      templateInstance.taskimage = dataUrl;
+      templateInstance.$('#taskimagePreview')[0].setAttribute('src',dataUrl);
+    };    
+    fileReader.readAsDataURL(file);
+  },
 })
 Template.tracktime.helpers({
   date: () => dayjs(Template.instance().date.get()).format(getGlobalSetting('dateformatVerbose')),
@@ -362,6 +380,8 @@ Template.tracktime.helpers({
   },
   hours: () => (Timecards.findOne({ _id: Template.instance().tcid.get() })
     ? Timecards.findOne({ _id: Template.instance().tcid.get() }).hours : false),
+  taskimage: () => (Timecards.findOne({ _id: Template.instance().tcid.get() })
+    ? Timecards.findOne({ _id: Template.instance().tcid.get() }).taskimage : false),
   showTracker: () => (getUserSetting('timeunit') !== 'd'),
   showStartTime: () => (getGlobalSetting('useStartTime')),
   totalTime: () => Template.instance().totalTime.get(),
